@@ -83,11 +83,13 @@ export class DragDrop {
         this.dropZones.forEach(zone => {
             const onDragOver = (e) => {
                 e.preventDefault();
+                try { if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'; } catch (_) {}
                 zone.classList.add('over');
             };
             const onDragEnter = () => zone.classList.add('over');
             const onDragLeave = (e) => {
-                if (!zone.contains(e.relatedTarget)) zone.classList.remove('over');
+                const related = e.relatedTarget;
+                if (!related || !zone.contains(related)) zone.classList.remove('over');
             };
             const onDrop = (e) => {
                 e.preventDefault();
@@ -97,15 +99,32 @@ export class DragDrop {
                 }
             };
 
+            // Attach listeners on the zone itself
             zone.addEventListener('dragover', onDragOver);
             zone.addEventListener('dragenter', onDragEnter);
             zone.addEventListener('dragleave', onDragLeave);
             zone.addEventListener('drop', onDrop);
+
+            // Also attach to the inner label so dropping on the text works everywhere
+            const label = zone.querySelector('.drop-zone-label');
+            if (label) {
+                label.addEventListener('dragover', onDragOver);
+                label.addEventListener('dragenter', onDragEnter);
+                label.addEventListener('dragleave', onDragLeave);
+                label.addEventListener('drop', onDrop);
+            }
+
             this.cleanupFns.push(() => {
                 zone.removeEventListener('dragover', onDragOver);
                 zone.removeEventListener('dragenter', onDragEnter);
                 zone.removeEventListener('dragleave', onDragLeave);
                 zone.removeEventListener('drop', onDrop);
+                if (label) {
+                    label.removeEventListener('dragover', onDragOver);
+                    label.removeEventListener('dragenter', onDragEnter);
+                    label.removeEventListener('dragleave', onDragLeave);
+                    label.removeEventListener('drop', onDrop);
+                }
             });
         });
     }
