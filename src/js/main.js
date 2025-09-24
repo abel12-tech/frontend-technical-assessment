@@ -1,5 +1,6 @@
 import { DragDrop } from './dragDrop.js';
 import { BlogList } from './BlogList.js';
+import './navigation.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize Drag & Drop

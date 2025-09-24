@@ -1,10 +1,25 @@
 // Sticky, accessible, mobile-responsive navigation with smooth scroll and dynamic highlighting
 document.addEventListener('DOMContentLoaded', function () {
+    // Declare variables only once
     const nav = document.querySelector('.nav');
     const navToggle = document.querySelector('.nav-toggle');
     const navList = document.getElementById('nav-list');
     const navLinks = document.querySelectorAll('.nav-link');
     const sections = Array.from(document.querySelectorAll('section'));
+
+    // Set #nav-section nav link as active by default after DOM is ready
+    function setDefaultActiveNav() {
+        navLinks.forEach(l => {
+            l.classList.remove('active');
+            l.removeAttribute('aria-current');
+        });
+        const navSectionLink = Array.from(navLinks).find(l => l.getAttribute('href') === '#nav-section');
+        if (navSectionLink) {
+            navSectionLink.classList.add('active');
+            navSectionLink.setAttribute('aria-current', 'page');
+        }
+    }
+    setDefaultActiveNav();
 
     // Mobile menu toggle
     navToggle.addEventListener('click', function () {
@@ -28,9 +43,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Smooth scroll and focus management
+    let isClickingNav = false;
     navLinks.forEach(link => {
         link.addEventListener('click', function (e) {
             e.preventDefault();
+            isClickingNav = true;
             const targetId = link.getAttribute('href').slice(1);
             const target = document.getElementById(targetId);
             if (target) {
@@ -39,11 +56,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 const headerHeight = header ? header.offsetHeight : 0;
                 const targetY = target.getBoundingClientRect().top + window.scrollY - headerHeight;
                 window.scrollTo({ top: targetY, behavior: 'smooth' });
-                setTimeout(() => target.focus(), 400);
+                setTimeout(() => {
+                    target.focus();
+                    isClickingNav = false;
+                }, 400);
             }
-            navLinks.forEach(l => l.classList.remove('active'));
+            navLinks.forEach(l => {
+                l.classList.remove('active');
+                l.removeAttribute('aria-current');
+            });
             link.classList.add('active');
-            // Close mobile menu after click
+            link.setAttribute('aria-current', 'page');
             navList.classList.remove('open');
             navToggle.setAttribute('aria-expanded', false);
         });
@@ -56,29 +79,40 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Dynamic tab highlighting based on scroll
-    function highlightNav() {
-        let current = sections[0];
-        const scrollY = window.scrollY + nav.offsetHeight + 8;
-        sections.forEach(section => {
-            const rect = section.getBoundingClientRect();
-            if (rect.top + window.scrollY - nav.offsetHeight <= scrollY) {
-                current = section;
+    // Improved dynamic tab highlighting using Intersection Observer
+    const sectionMap = {};
+    sections.forEach(section => {
+        sectionMap[section.id] = section;
+    });
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.5 // 50% of section visible
+    };
+    let currentActive = null;
+    const observer = new IntersectionObserver((entries) => {
+    // Always allow scroll-based highlighting
+        let mostVisible = null;
+        let maxRatio = 0;
+        entries.forEach(entry => {
+            if (entry.intersectionRatio > maxRatio) {
+                maxRatio = entry.intersectionRatio;
+                mostVisible = entry.target;
             }
         });
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href').slice(1) === current.id) {
-                link.classList.add('active');
-                link.setAttribute('aria-current', 'page');
-            } else {
+        if (mostVisible) {
+            navLinks.forEach(link => {
+                link.classList.remove('active');
                 link.removeAttribute('aria-current');
+            });
+            const activeLink = Array.from(navLinks).find(l => l.getAttribute('href').slice(1) === mostVisible.id);
+            if (activeLink) {
+                activeLink.classList.add('active');
+                activeLink.setAttribute('aria-current', 'page');
             }
-        });
-    }
-    window.addEventListener('scroll', highlightNav);
-    window.addEventListener('resize', highlightNav);
-    highlightNav();
+        }
+    }, observerOptions);
+    sections.forEach(section => observer.observe(section));
 
     // Accessibility: trap focus in menu when open (mobile)
     navList.addEventListener('keydown', function (e) {
@@ -98,81 +132,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-/**
- * Navigation implementation with several issues:
- * - Global state usage
- * - No cleanup
- * - Direct DOM manipulation
- * - Memory leaks
- */
-export class Navigation {
-    constructor() {
-        // Direct queries without checks
-        this.sections = document.querySelectorAll('section');
-        this.links = document.querySelectorAll('a');
-        
-        // Problematic event binding
-        window.addEventListener('scroll', () => {
-            // Direct style manipulation on scroll
-            this.sections.forEach(section => {
-                const rect = section.getBoundingClientRect();
-                if (rect.top >= 0 && rect.top <= window.innerHeight) {
-                    section.style.opacity = '1';
-                    window.navState.currentSection = section.id;
-                } else {
-                    section.style.opacity = '0.5';
-                }
-            });
-        });
-
-        // Memory leak - no cleanup
-        setInterval(() => {
-            this.checkScroll();
-        }, 100);
-
-        this.init();
-    }
-
-    init() {
-        // Problematic intersection observer setup
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                // Direct style manipulation
-                entry.target.style.transform = entry.isIntersecting 
-                    ? 'scale(1.05)' 
-                    : 'scale(1)';
-            });
-        });
-
-        // Never disconnected
-        this.sections.forEach(section => observer.observe(section));
-
-        // Click handlers with timing issues
-        this.links.forEach(link => {
-            link.onclick = (e) => {
-                e.preventDefault();
-                const targetId = link.getAttribute('href').slice(1);
-                const target = document.getElementById(targetId);
-                
-                // Problematic scroll handling
-                window.scrollTo(0, target.offsetTop);
-                window.navState.isScrolling = true;
-                
-                // Timing issue
                 setTimeout(() => {
                     window.navState.isScrolling = false;
                 }, 1000);
-            };
-        });
-    }
-
-    checkScroll() {
-        // CPU intensive operation on interval
-        if (!window.navState.isScrolling) {
-            this.sections.forEach(section => {
-                const rect = section.getBoundingClientRect();
-                section.style.transform = `translateY(${Math.sin(rect.top) * 2}px)`;
-            });
-        }
-    }
-}

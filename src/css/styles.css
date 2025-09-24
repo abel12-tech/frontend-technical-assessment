@@ -1,3 +1,6 @@
+section.content-section {
+    min-height: 100vh;
+}
 /* Sticky Navigation Styles */
 .sticky-nav {
     position: sticky;
@@ -35,10 +38,9 @@
     outline: none;
 }
 .nav-link.active,
-.nav-link:focus,
 .nav-link[aria-current="page"] {
-    background: #3498db;
-    color: #fff;
+    background: #3498db !important;
+    color: #fff !important;
 }
 .nav-toggle {
     display: none;
