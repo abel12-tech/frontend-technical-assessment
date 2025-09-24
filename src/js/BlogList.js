@@ -19,6 +19,10 @@ export class BlogList {
         this.page = 1;
         this.perPage = 10;
 
+        this.sortBy = '';
+        this.categoryFilter = '';
+        this.searchQuery = '';
+
         // Bind handlers
         this.onSortChange = this.onSortChange.bind(this);
         this.onFilterChange = this.onFilterChange.bind(this);
@@ -39,13 +43,40 @@ export class BlogList {
     }
 
     async fetchData() {
-        // TODO (candidate): add basic caching and retry logic
-        const res = await fetch(this.apiUrl);
-        if (!res.ok) throw new Error('Failed to fetch blogs');
-        const data = await res.json();
-        if (!Array.isArray(data)) throw new Error('Unexpected API response');
+        const cacheKey = 'blogs-cache-v1';
+        try {
+            const cached = sessionStorage.getItem(cacheKey);
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed)) {
+                    this.items = parsed;
+                    this.filteredItems = [...parsed];
+                    return;
+                }
+            }
+        } catch {}
+
+        const fetchOnce = async () => {
+            const res = await fetch(this.apiUrl, { cache: 'no-store' });
+            if (!res.ok) throw new Error('Failed to fetch blogs');
+            const data = await res.json();
+            if (!Array.isArray(data)) throw new Error('Unexpected API response');
+            return data;
+        };
+
+        let data;
+        try {
+            data = await fetchOnce();
+        } catch (e) {
+            // one retry
+            data = await fetchOnce();
+        }
+
         this.items = data;
         this.filteredItems = [...data];
+        try {
+            sessionStorage.setItem(cacheKey, JSON.stringify(data));
+        } catch {}
     }
 
     setupEventListeners() {
@@ -70,25 +101,63 @@ export class BlogList {
         }
     }
 
-    // TODO (candidate): implement sorting
     onSortChange(e) {
-        const by = e.target.value;
-        // Implement sorting by: date, reading_time, category
-        // After sorting, reset page to 1 and call this.render()
+        this.sortBy = e.target.value || '';
+        this.applyFiltersAndRender();
     }
 
-    // TODO (candidate): implement filtering
     onFilterChange(e) {
-        const val = e.target.value; // Gadgets | Startups | Writing | ''
-        // Filter this.items by category or tags to create this.filteredItems
-        // After filtering, reset page to 1 and call this.render()
+        this.categoryFilter = e.target.value || '';
+        this.applyFiltersAndRender();
     }
 
-    // TODO (candidate): implement search by title
     onSearchInput(e) {
-        const q = (e.target.value || '').toLowerCase();
-        // Filter by title (and optionally content) using q
-        // After filtering, reset page to 1 and call this.render()
+        this.searchQuery = (e.target.value || '').toLowerCase();
+        this.applyFiltersAndRender();
+    }
+
+    applyFiltersAndRender() {
+        const categoryRank = {
+            'Writing': 1,
+            'Gadgets': 2,
+            'Startups': 3,
+            'Other': 4
+        };
+
+        // Filter
+        let working = this.items.filter(item => {
+            const inCategory = !this.categoryFilter || (item.tags || []).some(t => String(t).toLowerCase() === this.categoryFilter.toLowerCase());
+            const inSearch = !this.searchQuery || String(item.title || '').toLowerCase().includes(this.searchQuery);
+            return inCategory && inSearch;
+        });
+
+        // Sort
+        if (this.sortBy === 'date') {
+            working.sort((a, b) => new Date(b.published_date) - new Date(a.published_date));
+        } else if (this.sortBy === 'reading_time') {
+            const getMinutes = (v) => {
+                if (typeof v === 'number') return v;
+                const m = String(v || '').match(/(\d+)/);
+                return m ? parseInt(m[1], 10) : 0;
+            };
+            working.sort((a, b) => getMinutes(a.reading_time) - getMinutes(b.reading_time));
+        } else if (this.sortBy === 'category') {
+            const getCategory = (it) => {
+                const tags = (it.tags || []).map(x => String(x));
+                const found = ['Writing','Gadgets','Startups'].find(c => tags.includes(c));
+                return found || 'Other';
+            };
+            working.sort((a, b) => {
+                const ca = getCategory(a);
+                const cb = getCategory(b);
+                if (categoryRank[ca] !== categoryRank[cb]) return categoryRank[ca] - categoryRank[cb];
+                return String(a.title).localeCompare(String(b.title));
+            });
+        }
+
+        this.filteredItems = working;
+        this.page = 1; // ensure exactly 10 shown
+        this.render();
     }
 
     showLoading() {
