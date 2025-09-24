@@ -229,3 +229,209 @@ body {
 .active {}
 .dragging {}
 */
+/* Layout */
+main {
+    padding: 32px 16px;
+}
+
+.content-section {
+    max-width: 960px;
+    margin: 0 auto 64px auto;
+}
+
+h2 {
+    text-align: center;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* Drag & Drop Demo */
+.drag-drop-container {
+    margin-top: 16px;
+    background: #ffffff;
+    border: 1px solid #edf0f3;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.draggable-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.draggable-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 1px solid #edf0f3;
+    background: #fafbfc;
+    border-radius: 6px;
+    padding: 10px 12px;
+    transition: box-shadow 120ms ease, transform 120ms ease, background 120ms ease;
+}
+
+.draggable-item:focus {
+    outline: 2px solid var(--secondary-color);
+    outline-offset: 2px;
+}
+
+.draggable-item.dragging {
+    opacity: 0.98;
+    transform: scale(1.03);
+    box-shadow: 0 8px 20px rgba(52,152,219,0.18);
+    background: var(--secondary-color);
+    color: #fff;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.item-content {
+    flex: 1;
+    color: #2c3e50;
+}
+
+.drag-handle {
+    user-select: none;
+    cursor: grab;
+    color: #94a3b8;
+}
+
+.drop-zones {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.drop-zone {
+    min-height: 96px;
+    background: #ffffff;
+    border: 2px dashed #d6dee6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    position: relative;
+}
+
+.drop-zone .drop-zone-label { pointer-events: none; }
+
+.drop-zone .draggable-item {
+    width: 100%;
+}
+
+.drop-zone .drop-zone-label {
+    color: #6b7280;
+    font-size: 15px;
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    background: transparent;
+}
+
+.drop-zone:has(.draggable-item) .drop-zone-label {
+    display: none;
+}
+
+.drop-zone.over,
+.drop-zone.touch-ready {
+    background: #e3f2fd;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 2px rgba(52,152,219,0.12);
+    color: var(--secondary-color);
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+}
+
+/* Filled drop zone hides label for clarity */
+.drop-zone.filled .drop-zone-label {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    .drop-zones {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Blog List Styles */
+.blog-list-container {
+    margin-top: 16px;
+    background: #ffffff;
+    border: 1px solid #edf0f3;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.blog-controls {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+.blog-controls select,
+.blog-controls .search-input {
+    padding: 8px 10px;
+    border: 1px solid #d6dee6;
+    border-radius: 6px;
+    background: #fafbfc;
+}
+.blog-item {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid #edf0f3;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background: #ffffff;
+    transition: box-shadow 120ms ease, transform 120ms ease;
+}
+.blog-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+}
+.blog-image {
+    width: 160px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+.blog-title {
+    margin: 0 0 6px 0;
+    color: #111827;
+}
+.blog-meta {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+.blog-excerpt {
+    margin: 0 0 8px 0;
+    color: #334155;
+}
+.blog-tags .tag {
+    display: inline-block;
+    font-size: 12px;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-right: 6px;
+}
+.loading-indicator.hidden,
+.error-container.hidden {
+    display: none;
+}
+.no-results {
+    text-align: center;
+    color: #6b7280;
+}
