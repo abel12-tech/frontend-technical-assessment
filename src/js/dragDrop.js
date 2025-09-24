@@ -1,6 +1,4 @@
-// Accessible, robust Drag & Drop utility for the demo UI
 // - Uses HTML5 DnD for mouse/desktop
-// - Adds touch-pointer fallback
 // - Highlights drop zones and moves the actual node (no innerHTML cloning)
 export class DragDrop {
     constructor(root = document) {
