@@ -9,3 +9,110 @@ body {
     padding: 0;
     font-family: system-ui, -apple-system, sans-serif;
 }
+
+/* Layout */
+main {
+    padding: 32px 16px;
+}
+
+.content-section {
+    max-width: 960px;
+    margin: 0 auto 64px auto;
+}
+
+h2 {
+    text-align: center;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+/* Drag & Drop Demo */
+.drag-drop-container {
+    margin-top: 16px;
+    background: #ffffff;
+    border: 1px solid #edf0f3;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.draggable-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.draggable-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 1px solid #edf0f3;
+    background: #fafbfc;
+    border-radius: 6px;
+    padding: 10px 12px;
+    transition: box-shadow 120ms ease, transform 120ms ease, background 120ms ease;
+}
+
+.draggable-item:focus {
+    outline: 2px solid var(--secondary-color);
+    outline-offset: 2px;
+}
+
+.draggable-item.dragging {
+    opacity: 0.85;
+    transform: scale(1.02);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
+
+.item-content {
+    flex: 1;
+    color: #2c3e50;
+}
+
+.drag-handle {
+    user-select: none;
+    cursor: grab;
+    color: #94a3b8;
+}
+
+.drop-zones {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.drop-zone {
+    min-height: 96px;
+    background: #ffffff;
+    border: 2px dashed #d6dee6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+}
+
+.drop-zone .draggable-item {
+    width: 100%;
+}
+
+.drop-zone .drop-zone-label {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.drop-zone.over,
+.drop-zone.touch-ready {
+    background: #f8fbff;
+    border-color: var(--secondary-color);
+    box-shadow: inset 0 0 0 1px rgba(52, 152, 219, 0.15);
+}
+
+@media (max-width: 640px) {
+    .drop-zones {
+        grid-template-columns: 1fr;
+    }
+}
