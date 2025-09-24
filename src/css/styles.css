@@ -61,9 +61,11 @@ h2 {
 }
 
 .draggable-item.dragging {
-    opacity: 0.85;
+    opacity: 0.95;
     transform: scale(1.02);
     box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+    background: var(--secondary-color);
+    color: #ffffff;
 }
 
 .item-content {

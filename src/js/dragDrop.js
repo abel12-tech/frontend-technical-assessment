@@ -84,6 +84,11 @@ export class DragDrop {
             const onDragOver = (e) => {
                 e.preventDefault();
                 zone.classList.add('over');
+                // While hovering a drop zone, move the actual element here
+                // so it no longer occupies its original position.
+                if (this.draggedElement && this.draggedElement.parentElement !== zone) {
+                    zone.appendChild(this.draggedElement);
+                }
             };
             const onDragEnter = () => zone.classList.add('over');
             const onDragLeave = (e) => {
