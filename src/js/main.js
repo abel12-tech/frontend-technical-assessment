@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Drag & Drop
     const dragDropContainer = document.querySelector('.drag-drop-container');
     if (dragDropContainer) {
-        const dragDrop = new DragDrop();
+        const dragDrop = new DragDrop(dragDropContainer);
         dragDrop.init();
     }
 
