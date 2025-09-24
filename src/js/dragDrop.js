@@ -64,7 +64,14 @@ export class DragDrop {
                 const target = document.elementFromPoint(t.clientX, t.clientY);
                 const zone = target?.closest?.('.drop-zone');
                 if (zone && this.draggedElement) {
+                    const previousParent = this.draggedElement.parentElement;
                     zone.appendChild(this.draggedElement);
+                    zone.classList.add('filled');
+                    // If previous parent was a drop zone and is now empty, clear filled state
+                    if (previousParent && previousParent.classList?.contains('drop-zone')) {
+                        const hasItems = previousParent.querySelector('.draggable-item');
+                        if (!hasItems) previousParent.classList.remove('filled');
+                    }
                 }
                 item.classList.remove('dragging');
                 this.draggedElement = null;
@@ -93,7 +100,14 @@ export class DragDrop {
                 e.preventDefault();
                 zone.classList.remove('over');
                 if (this.draggedElement) {
+                    const previousParent = this.draggedElement.parentElement;
                     zone.appendChild(this.draggedElement);
+                    zone.classList.add('filled');
+                    // If previous parent was a drop zone and is now empty, clear filled state
+                    if (previousParent && previousParent.classList?.contains('drop-zone')) {
+                        const hasItems = previousParent.querySelector('.draggable-item');
+                        if (!hasItems) previousParent.classList.remove('filled');
+                    }
                 }
             };
 
